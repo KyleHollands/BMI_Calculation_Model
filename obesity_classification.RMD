@@ -37,8 +37,6 @@ obesity_data[char_cols] <- lapply(obesity_data[char_cols], as.factor)
 
 ```
 
-
-
 * * *
 
 ## Part 1: Data
@@ -176,11 +174,17 @@ Another method would have been to use a correlation matrix, however, it only wor
 predictor variables.
 
 ```{r}
-# Calculate VIF for the predictors in the model
-gvif <- vif(obesity_data_model_final)
+# Calculate VIF for the predictors in data_model_final
+gvif_final <- vif(obesity_data_model_final)
 
-# Print the VIF values
-print(gvif)
+# Calculate VIF for the predictors in data_model_excludeOne
+gvif_excludeOne <- vif(obesity_data_model_excludeOne)
+
+# Print the VIF - data_model_final
+print(gvif_final)
+
+# Print the VIF - data_model_excludeOne
+print(gvif_excludeOne)
 ```
 
 ### Conditions
@@ -201,7 +205,7 @@ plot(obesity_data_model_final$residuals ~ obesity_data$Weight)
 ```
 
 #### (2) nearly normal residuals with mean 0
-The plots below indicate a nearly normal distribution of residuals scattered
+The plots below indicate a relatively, nearly normal distribution of residuals scattered
 around zero within the model.
 
 ‣ Some residuals will be positive and some negative
@@ -287,7 +291,6 @@ test_two_pred_excludeOne
 test_three_pred_excludeOne
 test_four_pred_excludeOne
 test_five_pred_excludeOne
-
 
 # Final Model
 obesity_data_model_final = lm(BMI ~ Gender + Weight, data = obesity_data_cleaned)
