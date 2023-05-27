@@ -1,0 +1,323 @@
+---
+title: "Modeling and prediction for movies"
+output: 
+  html_document: 
+    fig_height: 4
+    highlight: pygments
+    theme: spacelab
+---
+
+## Setup
+
+### Load packages
+
+```{r load-packages, message = FALSE}
+library(ggplot2)
+library(dplyr)
+library(statsr)
+library(leaps)
+library(car)
+```
+
+### Load data
+
+Make sure your data and R Markdown files are in the same directory. When loaded
+your data file will be called `movies`. Delete this note when before you submit 
+your work. 
+
+```{r load-data}
+# Import the dataset
+obesity_data <- read.csv("Obesity Classification.csv")
+
+# Identify the character columns
+char_cols <- sapply(obesity_data, is.character)
+
+# Convert character columns to factors for easier analysis
+obesity_data[char_cols] <- lapply(obesity_data[char_cols], as.factor)
+
+```
+
+
+
+* * *
+
+## Part 1: Data
+
+### How are the observations in the sample collected?
+The provided dataset encompasses details regarding the classification of individuals' obesity. It has been compiled from diverse sources, including medical records, surveys, and self-reported data.
+Due to this being an observational study, this analysis can only be used for generalized purposes; no causal connections can be made.
+
+* * *
+
+## Part 2: Research question
+What metrics are most associated with weight?
+
+* * *
+
+## Part 3: Exploratory data analysis
+
+#### Variables being considered
+Dependent Variable
+- BMI
+
+Independent Variables
+- Age
+- Gender 
+- Height 
+- Label
+- Weight
+
+### Investigate the Dataset and Variables
+
+```{r eda}
+### Investigate the Dataset
+head(obesity_data)
+tail(obesity_data)
+str(obesity_data)
+summary(obesity_data)
+
+### Investigate the variables
+## Dependent Variable
+summary(obesity_data$BMI)
+barplot(table(obesity_data$BMI))
+boxplot(table(obesity_data$BMI))
+hist(table(obesity_data$BMI))
+
+## Independent Variables
+# Age
+summary(obesity_data$Age)
+hist(obesity_data$Age)
+boxplot(obesity_data$Age)
+scatter.smooth(obesity_data$Age)
+qqnorm(obesity_data$Age)
+qqline(obesity_data$Age)
+
+# Gender
+summary(obesity_data$Gender)
+barplot(table(obesity_data$Gender))
+boxplot(table(obesity_data$Gender))
+hist(table(obesity_data$Gender))
+
+# Height
+summary(obesity_data$Height)
+hist(obesity_data$Height)
+boxplot(obesity_data$Height)
+scatter.smooth(obesity_data$Height)
+qqnorm(obesity_data$Height)
+qqline(obesity_data$Height)
+
+# Label
+summary(obesity_data$Label)
+barplot(table(obesity_data$Label))
+boxplot(table(obesity_data$Label))
+hist(table(obesity_data$Label))
+
+# BMI
+summary(obesity_data$Weight)
+hist(obesity_data$Weight)
+boxplot(obesity_data$Weight)
+scatter.smooth(obesity_data$Weight)
+qqnorm(obesity_data$Weight)
+qqline(obesity_data$Weight)
+```
+
+### Data Manipulation and Cleaning
+```{r manip_and_clean}
+# Keep columns for analysis
+obesity_data_trimmed <- obesity_data[, c("Weight","Age","Gender", "Height","BMI")]
+
+# Check rows with N/A's and remove if feasible
+num_rows_with_na <- sum(is.na(obesity_data_trimmed))
+
+# Remove rows with N/As.
+obesity_data_cleaned <- na.omit(obesity_data_trimmed)
+
+# Analyze cleaned data
+str(obesity_data_cleaned)
+```
+
+* * *
+
+## Part 4: Modeling - Multiple Linear Regression
+
+### Backwards Elimination - P-Value
+
+```{r modeling}
+# Full model
+obesity_data_model_full = lm(BMI ~ Age + Gender + Height + Weight, data = obesity_data_cleaned)
+summary(obesity_data_model_full)
+
+# Model - Exclude Age
+obesity_data_model_excludeOne = lm(BMI ~ Height + Gender + Weight, data = obesity_data_cleaned)
+summary(obesity_data_model_excludeOne)
+
+# Model - Exclude Height/Age
+obesity_data_model_excludeTwo = lm(BMI ~ Gender + Weight, data = obesity_data_cleaned)
+summary(obesity_data_model_excludeTwo)
+
+# Final Model
+obesity_data_model_final = lm(BMI ~ Gender + Weight, data = obesity_data_cleaned)
+summary(obesity_data_model_final)
+```
+
+Height was left out of this model due to a low p-value score during backwards elimination. 
+However, many models that calculate BMI to within a specific interval utilize height as a metric
+for prediction. It could be that since this dataset is relatively small, the p-value did not appear
+to be a statistically significant predictor. A much larger dataset is likely required to achieve
+a better, more accurate model, that would likely include the Height metric as a predictor.
+
+### Assess Collinearity of Predictor Variables in the Final Model
+The adjusted GVIF taking into account the DF indicates a relatively low indication
+of collinearity between predictor (independent) variables.
+The GVID and adjusted GVIF are relatively low, and fall below the acceptable
+threshold of 5. 
+
+Another method would have been to use a correlation matrix, however, it only works with numerical
+predictor variables.
+
+```{r}
+# Calculate VIF for the predictors in the model
+gvif <- vif(obesity_data_model_final)
+
+# Print the VIF values
+print(gvif)
+```
+
+### Conditions
+
+#### (1) linear relationships between (numerical) x and y
+Check if each explanatory variable is linearly related to the response variable.
+
+‣ Each (numerical) explanatory variable linearly related to the response variable
+‣ Check using residuals plots (e vs. x)
+‣ Looking for a random scatter around 0
+‣ Instead of scatterplot of y vs. x: allows for considering the other variables 
+that are also in the model, and not just the bivariate relationship between a 
+given x and y.
+
+```{r conditions_linear_relationships}
+plot(obesity_data_model_final$residuals ~ obesity_data$Gender)
+plot(obesity_data_model_final$residuals ~ obesity_data$Weight)
+```
+
+#### (2) nearly normal residuals with mean 0
+The plots below indicate a nearly normal distribution of residuals scattered
+around zero within the model.
+
+‣ Some residuals will be positive and some negative
+‣ On a residuals plot we look for random scatter of residuals around 0
+‣ This translates to a nearly normal distribution of residuals centered at 0
+‣ Check using histogram or normal probability plot
+
+```{r}
+hist(obesity_data_model_final$residuals)
+qqnorm(obesity_data_model_final$residuals)
+qqline(obesity_data_model_final$residuals)
+```
+
+#### (3) constant variability of residuals
+Constant variance is effectively met, with a slight convergence indicated nearing
+the right side of the residuals plot.
+
+‣ Residuals should be equally variable for low and high values of the predicted 
+response variable
+‣ Check using residuals plots of residuals vs. predicted (e vs. )
+‣ Residuals vs. predicted instead of residuals vs. x because it allows for 
+considering the entire model (with all explanatory variables) at once
+‣ Residuals randomly scattered in a band with a constant width around 0 (no 
+fan shape)
+‣ Also worthwhile to view absolute value of residuals vs. predicted to identify 
+unusual observations easily
+
+```{r}
+plot(obesity_data_model_final$residuals ~ obesity_data_model_final$fitted)
+plot(abs(obesity_data_model_final$residuals) ~ obesity_data_model_final$fitted)
+```
+
+#### (4) independent residuals
+It does not appear there is time series structure involved with this data. The
+data is a random sample of movies from IMBD and Rotten Tomatoes so independence should
+be satisfied.
+
+‣ Independent residuals → independent observations
+‣ If time series structure is suspected check using residuals vs. order of data 
+collection
+‣ If not, think about how the data are sampled
+
+```{r}
+plot(obesity_data_model_final$residuals)
+```
+
+* * *
+
+## Part 5: Prediction
+
+```{r prediction}
+# Calculate confidence intervals for the coefficients
+conf_intervals_excludeOne <- confint(obesity_data_model_excludeOne)
+conf_intervals_final <- confint(obesity_data_model_final)
+
+# View the confidence intervals
+conf_intervals_final
+conf_intervals_excludeOne
+
+## Models
+
+# Final Model + Height
+obesity_data_model_excludeOne = lm(BMI ~ Gender + Weight + Height, data = obesity_data_cleaned)
+
+## Enter data for the model
+# Test the model against observed values - Final Model + Height Predictor
+test_one_excludeOne = data.frame(Gender = c("Male"), Weight = c(80), Height = c(175))
+test_two_excludeOne = data.frame(Gender = c("Female"), Weight = c(60), Height = c(160))
+test_three_excludeOne = data.frame(Gender = c("Male"), Weight = c(90), Height = c(180))
+test_four_excludeOne = data.frame(Gender = c("Female"), Weight = c(50), Height = c(150))
+test_five_excludeOne = data.frame(Gender = c("Male"), Weight = c(100), Height = c(190))
+
+## Make predictions based on the movie data above - Final Model + Height Predictor
+test_one_pred_excludeOne <- predict(obesity_data_model_excludeOne, test_one_excludeOne)
+test_two_pred_excludeOne <- predict(obesity_data_model_excludeOne, test_two_excludeOne)
+test_three_pred_excludeOne <- predict(obesity_data_model_excludeOne, test_three_excludeOne)
+test_four_pred_excludeOne <- predict(obesity_data_model_excludeOne, test_four_excludeOne)
+test_five_pred_excludeOne <- predict(obesity_data_model_excludeOne, test_five_excludeOne)
+
+## View the predicted values - Final Model + Height Predictor
+test_one_pred_excludeOne
+test_two_pred_excludeOne
+test_three_pred_excludeOne
+test_four_pred_excludeOne
+test_five_pred_excludeOne
+
+
+# Final Model
+obesity_data_model_final = lm(BMI ~ Gender + Weight, data = obesity_data_cleaned)
+
+# Test the model against observed values - Final Model
+test_one_final = data.frame(Gender = c("Male"), Weight = c(80))
+test_two_final = data.frame(Gender = c("Female"), Weight = c(60))
+test_three_final = data.frame(Gender = c("Male"), Weight = c(90))
+test_four_final = data.frame(Gender = c("Female"), Weight = c(50))
+
+## Make predictions based on the movie data above - Final Model
+test_one_pred_final <- predict(obesity_data_model_final, test_one_final)
+test_two_pred_final <- predict(obesity_data_model_final, test_two_final)
+test_three_pred_final <- predict(obesity_data_model_final, test_three_final)
+test_four_pred_final <- predict(obesity_data_model_final, test_four_final)
+
+## View the predicted values - Final Model
+test_one_pred_final
+test_two_pred_final
+test_three_pred_final
+test_four_pred_final
+```
+
+* * *
+
+## Part 6: Conclusion
+
+When comparing the model results to some of the observed data, it appears to be fairly close. The confidence conf_intervals
+for the predictors calculated earlier also seem to correspond to the variability in the predictions.
+To improve the model, Logistic Regression can be utilized and a different response variable can be used, such as Label,
+which indicates whether an individual is Underweight, Normal, Overweight or Obese.
+A much larger dataset should also be used to build a better model which, as stated above, would likely end up including
+the Height predictor variable, which appeared to not be statistically significant.
