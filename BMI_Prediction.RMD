@@ -27,7 +27,7 @@ your work.
 
 ```{r load-data}
 # Import the dataset
-obesity_data <- read.csv("Obesity Classification.csv")
+obesity_data <- read.csv("Obesity_Data.csv")
 
 # Identify the character columns
 char_cols <- sapply(obesity_data, is.character)
