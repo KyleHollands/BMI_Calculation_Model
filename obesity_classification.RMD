@@ -48,7 +48,7 @@ Due to this being an observational study, this analysis can only be used for gen
 * * *
 
 ## Part 2: Research question
-What metrics are most associated with weight?
+What metrics in the dataset are most associated with weight?
 
 * * *
 
@@ -77,7 +77,7 @@ summary(obesity_data)
 ### Investigate the variables
 ## Dependent Variable
 summary(obesity_data$BMI)
-barplot(table(obesity_data$BMI))
+barplot(table(obesity_data$BMI)) 
 boxplot(table(obesity_data$BMI))
 hist(table(obesity_data$BMI))
 
@@ -153,14 +153,16 @@ summary(obesity_data_model_excludeOne)
 obesity_data_model_excludeTwo = lm(BMI ~ Gender + Weight, data = obesity_data_cleaned)
 summary(obesity_data_model_excludeTwo)
 
+#---------------------------------------------------------------------------------
+
 # Final Model
 obesity_data_model_final = lm(BMI ~ Gender + Weight, data = obesity_data_cleaned)
 summary(obesity_data_model_final)
 ```
 
 Height was left out of this model due to a low p-value score during backwards elimination. 
-However, many models that calculate BMI to within a specific interval utilize height as a metric
-for prediction. It could be that since this dataset is relatively small, the p-value did not appear
+However, many models that calculate BMI utilize height as a metricfor prediction. It 
+could be that since this dataset is relatively small, the p-value did not appear
 to be a statistically significant predictor. A much larger dataset is likely required to achieve
 a better, more accurate model, that would likely include the Height metric as a predictor.
 
@@ -202,6 +204,7 @@ given x and y.
 ```{r conditions_linear_relationships}
 plot(obesity_data_model_final$residuals ~ obesity_data$Gender)
 plot(obesity_data_model_final$residuals ~ obesity_data$Weight)
+plot(obesity_data_model_final$residuals ~ obesity_data$Height)
 ```
 
 #### (2) nearly normal residuals with mean 0
@@ -258,16 +261,16 @@ plot(obesity_data_model_final$residuals)
 
 ```{r prediction}
 # Calculate confidence intervals for the coefficients
-conf_intervals_excludeOne <- confint(obesity_data_model_excludeOne)
 conf_intervals_final <- confint(obesity_data_model_final)
+conf_intervals_excludeOne <- confint(obesity_data_model_excludeOne)
 
 # View the confidence intervals
 conf_intervals_final
 conf_intervals_excludeOne
 
-## Models
+### Models
 
-# Final Model + Height
+## Final Model + Height
 obesity_data_model_excludeOne = lm(BMI ~ Gender + Weight + Height, data = obesity_data_cleaned)
 
 ## Enter data for the model
@@ -278,14 +281,14 @@ test_three_excludeOne = data.frame(Gender = c("Male"), Weight = c(90), Height = 
 test_four_excludeOne = data.frame(Gender = c("Female"), Weight = c(50), Height = c(150))
 test_five_excludeOne = data.frame(Gender = c("Male"), Weight = c(100), Height = c(190))
 
-## Make predictions based on the movie data above - Final Model + Height Predictor
+# Make predictions based on the movie data above - Final Model + Height Predictor
 test_one_pred_excludeOne <- predict(obesity_data_model_excludeOne, test_one_excludeOne)
 test_two_pred_excludeOne <- predict(obesity_data_model_excludeOne, test_two_excludeOne)
 test_three_pred_excludeOne <- predict(obesity_data_model_excludeOne, test_three_excludeOne)
 test_four_pred_excludeOne <- predict(obesity_data_model_excludeOne, test_four_excludeOne)
 test_five_pred_excludeOne <- predict(obesity_data_model_excludeOne, test_five_excludeOne)
 
-## View the predicted values - Final Model + Height Predictor
+# View the predicted values - Final Model + Height Predictor
 test_one_pred_excludeOne
 test_two_pred_excludeOne
 test_three_pred_excludeOne
@@ -300,18 +303,22 @@ test_one_final = data.frame(Gender = c("Male"), Weight = c(80))
 test_two_final = data.frame(Gender = c("Female"), Weight = c(60))
 test_three_final = data.frame(Gender = c("Male"), Weight = c(90))
 test_four_final = data.frame(Gender = c("Female"), Weight = c(50))
+test_five_final = data.frame(Gender = c("Male"), Weight = c(100))
 
-## Make predictions based on the movie data above - Final Model
+# Make predictions based on the movie data above - Final Model
 test_one_pred_final <- predict(obesity_data_model_final, test_one_final)
 test_two_pred_final <- predict(obesity_data_model_final, test_two_final)
 test_three_pred_final <- predict(obesity_data_model_final, test_three_final)
 test_four_pred_final <- predict(obesity_data_model_final, test_four_final)
+test_five_pred_final <- predict(obesity_data_model_final, test_five_final)
 
-## View the predicted values - Final Model
+# View the predicted values - Final Model
 test_one_pred_final
 test_two_pred_final
 test_three_pred_final
 test_four_pred_final
+test_five_pred_final
+
 ```
 
 * * *
@@ -324,3 +331,5 @@ To improve the model, Logistic Regression can be utilized and a different respon
 which indicates whether an individual is Underweight, Normal, Overweight or Obese.
 A much larger dataset should also be used to build a better model which, as stated above, would likely end up including
 the Height predictor variable, which appeared to not be statistically significant.
+A second model was made including the Height predictor, which seems to be a frequent predictor for BMI predictor models.
+
