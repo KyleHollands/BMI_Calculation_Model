@@ -4,4 +4,3 @@ A personal MLR project that predicts BMI based on a few predictors: Height, Gend
 Another model was created incorporating the Height predictor, and the predictions of the two models are very close.
 In application, it appears Height would likely end up being a significant predictor, but a larger dataset would
 be required to determine this.
-
