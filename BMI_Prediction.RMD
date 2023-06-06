@@ -327,9 +327,8 @@ test_five_pred_final
 
 When comparing the model results to some of the observed data, it appears to be fairly close. The confidence conf_intervals
 for the predictors calculated earlier also seem to correspond to the variability in the predictions.
-To improve the model, Logistic Regression can be utilized and a different response variable can be used, such as Label,
-which indicates whether an individual is Underweight, Normal, Overweight or Obese.
-A much larger dataset should also be used to build a better model which, as stated above, would likely end up including
-the Height predictor variable, which appeared to not be statistically significant.
-A second model was made including the Height predictor, which seems to be a frequent predictor for BMI predictor models.
+
+A much larger dataset should be used to build a better model. This would likely include the height predictor variable, 
+which was not statistically significant in the previous model. A second model was created that included height, 
+which is a common predictor for BMI models.
 
