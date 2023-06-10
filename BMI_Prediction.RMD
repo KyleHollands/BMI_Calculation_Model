@@ -21,10 +21,6 @@ library(car)
 
 ### Load data
 
-Make sure your data and R Markdown files are in the same directory. When loaded
-your data file will be called `movies`. Delete this note when before you submit 
-your work. 
-
 ```{r load-data}
 # Import the dataset
 obesity_data <- read.csv("Obesity_Data.csv")
@@ -48,7 +44,8 @@ Due to this being an observational study, this analysis can only be used for gen
 * * *
 
 ## Part 2: Research question
-What metrics in the dataset are most associated with weight?
+What metrics are most associated with BMI? And once determined, can a model be created
+to predict BMI based on these predictors?
 
 * * *
 
@@ -110,7 +107,7 @@ barplot(table(obesity_data$Label))
 boxplot(table(obesity_data$Label))
 hist(table(obesity_data$Label))
 
-# BMI
+# Weight
 summary(obesity_data$Weight)
 hist(obesity_data$Weight)
 boxplot(obesity_data$Weight)
@@ -173,7 +170,8 @@ The GVID and adjusted GVIF are relatively low, and fall below the acceptable
 threshold of 5. 
 
 Another method would have been to use a correlation matrix, however, it only works with numerical
-predictor variables.
+predictor variables. For future analysis projects, categorical variables can be encoded to a numerical
+representation so the correlaton matrix can be utilized.
 
 ```{r}
 # Calculate VIF for the predictors in data_model_final
@@ -228,7 +226,7 @@ the right side of the residuals plot.
 
 ‣ Residuals should be equally variable for low and high values of the predicted 
 response variable
-‣ Check using residuals plots of residuals vs. predicted (e vs. )
+‣ Check using residuals plots of residuals vs. predicted (e vs. x_hat)
 ‣ Residuals vs. predicted instead of residuals vs. x because it allows for 
 considering the entire model (with all explanatory variables) at once
 ‣ Residuals randomly scattered in a band with a constant width around 0 (no 
